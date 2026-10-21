@@ -113,6 +113,8 @@ for a topic instead of creating a second one under a standard name.
 
 **R24.** Open docs on demand: skim `README.md` and `docs/PROJECT.md` once per session, then only the doc the task
 touches. If a doc you need does not exist, do not invent its contents: work from the code and tell the user.
+If `docs/PROJECT.md` still says `_Not written yet._`, offer once to fill it with `.ai/prompts/project-setup.md`
+(and for UI work without `docs/FRONTEND.md`, `.ai/prompts/frontend-setup.md`); do it only if the user agrees.
 
 **R25.** "Update the docs", "docs are outdated", "sync docs with code", "regenerate docs": follow
 `.ai/prompts/docs-update.md` (update only, verify every claim against the code, mark what is uncertain,

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { resolve } from "node:path";
-import { VERSION, doctor, init, update } from "../lib/commands.js";
+import { VERSION, doctor, init, nextSteps, update } from "../lib/commands.js";
 
 const HELP = `ai-kit ${VERSION} — the same AI-agent setup in every project
 
@@ -62,10 +62,16 @@ if (flag("-v") || flag("--version")) {
   console.log(bold("Files:"));
   showPlan(plan);
   if (!dryRun) {
-    console.log(`\n${bold("Next:")} open the project with your AI agent and say:`);
-    console.log(`  "follow .ai/prompts/project-setup.md"   ${dim("→ fills docs/PROJECT.md from the code")}`);
-    if (facts.frontend) console.log(`  "follow .ai/prompts/frontend-setup.md"  ${dim("→ writes docs/FRONTEND.md (styling + phone rules)")}`);
-    console.log(`  Then commit the new files. Check later with: npx github:Hazman97/ai-kit doctor`);
+    const steps = nextSteps(dir, facts);
+    if (steps.length) {
+      console.log(`\n${bold("One-time setup")} ${dim("(once per project; later sessions read these docs on their own)")}`);
+      console.log("  Open the project with your AI agent and say:");
+      for (const s of steps) console.log(`  "${s.say}"${" ".repeat(Math.max(1, 40 - s.say.length))}${dim(`→ ${s.does}`)}`);
+      console.log(dim("  Forget it? The agent offers to do it itself when it finds the doc empty (AGENTS.md R24)."));
+    } else {
+      console.log(`\n${bold("Ready.")} Nothing to say to your agent: it reads AGENTS.md and the docs on its own.`);
+    }
+    console.log(`  Commit the changed files. Check any time with: npx github:Hazman97/ai-kit doctor`);
   }
 } else if (cmd === "update") {
   const { plan, failed } = update(dir, { dryRun });

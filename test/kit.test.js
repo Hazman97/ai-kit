@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, test } from "node:test";
-import { VERSION, doctor, init, projectPart, update } from "../lib/commands.js";
+import { VERSION, doctor, init, nextSteps, projectPart, update } from "../lib/commands.js";
 import { detect } from "../lib/detect.js";
 
 const dirs = [];
@@ -307,4 +307,19 @@ test("init on a project that is already set up brings it to the latest version, 
   assert.equal(read(dir, ".ai/prompts/ui-task.md"), "my own ui prompt\n");
   assert.equal(read(dir, "LEARNINGS.md"), "# mine\n");
   assert.equal(Object.keys(kinds(plan)).some((p) => p.startsWith(".ai/backup/")), false, "an ai-kit AGENTS.md needs no backup");
+});
+
+test("next steps: the one-time setup prompts are shown only until each doc is written", () => {
+  const dir = project(VUE);
+  const { facts } = init(dir);
+  assert.deepEqual(nextSteps(dir, facts).map((s) => s.say), ["follow .ai/prompts/project-setup.md", "follow .ai/prompts/frontend-setup.md"]);
+
+  writeFileSync(join(dir, "docs/PROJECT.md"), "# shop\n\n## What it is\nA shop.\n");
+  assert.deepEqual(nextSteps(dir, facts).map((s) => s.say), ["follow .ai/prompts/frontend-setup.md"]);
+  writeFileSync(join(dir, "docs/FRONTEND.md"), "# Frontend rules\n");
+  assert.deepEqual(nextSteps(dir, facts), [], "a project that is set up gets nothing to say");
+
+  const api = project({ "package.json": { name: "api", dependencies: { express: "^5.0.0" } } });
+  const r = init(api);
+  assert.deepEqual(nextSteps(api, r.facts).map((s) => s.say), ["follow .ai/prompts/project-setup.md"], "no UI, no frontend-setup");
 });

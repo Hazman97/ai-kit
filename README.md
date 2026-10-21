@@ -79,7 +79,7 @@ Add `--dry-run` to any command to see what would change without changing anythin
 
 ## After `init`
 
-Open the project with your agent and say:
+**Once per project** (later sessions read these docs on their own, and if you forget, the agent offers to do it when it finds the doc empty). Open the project with your agent and say:
 
 1. `follow .ai/prompts/project-setup.md` → it fills `docs/PROJECT.md` from the code.
 2. For a project with a UI: `follow .ai/prompts/frontend-setup.md` → it writes `docs/FRONTEND.md`.
@@ -109,7 +109,7 @@ npx github:Hazman97/ai-kit doctor    # semak: docs hilang, placeholder, .env dal
 npx github:Hazman97/ai-kit update    # tarik peraturan terbaru (nota projek tak disentuh)
 ```
 
-Lepas `init`, beritahu AI: **"follow .ai/prompts/project-setup.md"**. Dia akan isi `docs/PROJECT.md` dari kod.
+Lepas `init`, beritahu AI **sekali sahaja untuk setiap projek**: **"follow .ai/prompts/project-setup.md"**. Dia akan isi `docs/PROJECT.md` dari kod. Sesi seterusnya baca doc tu sendiri; kalau terlupa, AI akan tawarkan bila nampak doc masih kosong.
 Projek yang dah ada `AGENTS.md`? Jalankan `init` macam biasa: peraturan terbaru dimasukkan, nota projek anda dikekalkan, dan backup disimpan dalam `.ai/backup/`. Guna `--no-merge` kalau tak nak fail itu diubah.
 
 ## Develop
