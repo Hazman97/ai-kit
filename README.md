@@ -50,6 +50,8 @@ your-project/
         ├── project-setup.md   fill docs/PROJECT.md from the code
         ├── docs-update.md     sync docs with code (update only, verify every claim)
         ├── frontend-setup.md  write docs/FRONTEND.md (design tokens, Tailwind rules, phone rules)
+        ├── api-setup.md       write docs/API.md (routes, auth, payloads, errors)
+        ├── database-setup.md  write docs/DATABASE.md (schema, storage, access rules, migrations)
         ├── ui-task.md         hand UI work to another agent: logic first, look second, screenshots as proof
         └── audit.md           a production-safe audit: static + API contract + running the app
 ```
@@ -83,6 +85,8 @@ Add `--dry-run` to any command to see what would change without changing anythin
 
 1. `follow .ai/prompts/project-setup.md` → it fills `docs/PROJECT.md` from the code.
 2. For a project with a UI: `follow .ai/prompts/frontend-setup.md` → it writes `docs/FRONTEND.md`.
+   A backend with many routes or a real schema: `api-setup.md` → `docs/API.md`, `database-setup.md` →
+   `docs/DATABASE.md` (only when the project needs them).
 3. Commit the new files.
 
 Later: `follow .ai/prompts/audit.md` before a release, `follow .ai/prompts/ui-task.md` to hand a screen to

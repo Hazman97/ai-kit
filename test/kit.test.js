@@ -95,10 +95,59 @@ test("detect: pnpm workspaces, other languages, full-stack and mobile apps, sub-
   assert.equal(go.hasPackage, false);
 });
 
+test("detect: Tailwind from a CDN script, sub-package check/deploy scripts, wrangler storage bindings", () => {
+  const dir = project({
+    "package.json": { name: "smash", scripts: { dev: "vite" }, dependencies: { react: "^19.0.0" }, devDependencies: { vite: "^7.0.0" } },
+    "index.html": '<head><script src="https://cdn.tailwindcss.com"></script></head>',
+    "worker/package.json": { scripts: { dev: "wrangler dev", check: "tsc --noEmit", deploy: "wrangler deploy" }, devDependencies: { wrangler: "^4.0.0" } },
+    "worker/wrangler.toml": 'name = "api"\n[[d1_databases]]\nbinding = "DB"\n',
+  });
+  const f = detect(dir);
+  assert.equal(f.styling, "Tailwind CSS v3 (CDN)");
+  assert.equal(f.tailwind, 3);
+  assert.equal(f.commands.typecheck, "cd worker && npm run check");
+  assert.ok(f.commandRows.some(([t, c]) => t === "Deploy (`worker/`)" && c === "cd worker && npm run deploy"), JSON.stringify(f.commandRows));
+  assert.ok(f.stack.some((l) => l.includes("Data: Cloudflare D1")), f.stack.join("\n"));
+  // `check` that is not a type checker stays out of the type-check row
+  assert.equal(detect(project({ "package.json": { scripts: { check: "npm run lint && npm test" } } })).commands.typecheck, null);
+  // v4 browser build
+  assert.equal(detect(project({ "package.json": { dependencies: { vue: "^3.5.0" } }, "index.html": '<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>' })).styling, "Tailwind CSS v4 (CDN)");
+
+  init(dir);
+  assert.match(read(dir, ".ai/prompts/api-setup.md"), /Detected by ai-kit: Cloudflare Workers in `worker\/`/);
+  assert.match(read(dir, ".ai/prompts/database-setup.md"), /Detected by ai-kit: Cloudflare D1 in `worker\/`/);
+  assert.match(read(dir, "AGENTS.md"), /\| `api-setup\.md` \|/);
+});
+
+test("detect: Laravel commands through artisan, Blade CDN Tailwind, Eloquent migrations", () => {
+  const dir = project({
+    "composer.json": { require: { "laravel/framework": "^11.0" }, scripts: { dev: ["npx concurrently ..."] } },
+    "package.json": { scripts: { dev: "vite", build: "vite build" }, devDependencies: { vite: "^6.0.0" } },
+    "resources/views/layouts/app.blade.php": '<script src="https://cdn.tailwindcss.com"></script>',
+    "database/migrations/2024_01_01_000000_create_users_table.php": "<?php",
+  });
+  const f = detect(dir);
+  // Blade pages make it a UI too: the frontend prompt is offered and the top-level styling is filled
+  assert.equal(f.packages[0].role, "fullstack");
+  assert.equal(f.framework, "Blade (Laravel)");
+  assert.equal(f.styling, "Tailwind CSS v3 (CDN)");
+  assert.equal(f.commands.dev, "composer run dev");
+  assert.equal(f.commands.test, "php artisan test");
+  assert.equal(f.commands.build, "npm run build");
+  assert.equal(f.packages[0].styling, "Tailwind CSS v3 (CDN)");
+  assert.ok(f.stack.some((l) => l.includes("Eloquent (database/migrations)")), f.stack.join("\n"));
+  init(dir);
+  assert.match(read(dir, ".ai/prompts/api-setup.md"), /Detected by ai-kit: PHP \(Laravel\) in root/);
+  // Inertia + Vue: the JS framework names the UI, the app is still full-stack
+  const inertia = detect(project({ "composer.json": { require: { "laravel/framework": "^11.0" } }, "package.json": { dependencies: { vue: "^3.5.0" } } }));
+  assert.equal(inertia.packages[0].role, "fullstack");
+  assert.equal(inertia.framework, "Vue 3");
+});
+
 test("init on a new project: every file, placeholders filled, an index of what exists", () => {
   const dir = project(VUE);
   const { plan } = init(dir);
-  for (const f of ["AGENTS.md", "CLAUDE.md", "GEMINI.md", "LEARNINGS.md", "docs/PROJECT.md", ".ai/prompts/audit.md", ".ai/prompts/docs-update.md", ".ai/prompts/frontend-setup.md", ".ai/prompts/project-setup.md", ".ai/prompts/ui-task.md", ".ai/ai-kit.json"]) {
+  for (const f of ["AGENTS.md", "CLAUDE.md", "GEMINI.md", "LEARNINGS.md", "docs/PROJECT.md", ".ai/prompts/audit.md", ".ai/prompts/docs-update.md", ".ai/prompts/frontend-setup.md", ".ai/prompts/api-setup.md", ".ai/prompts/database-setup.md", ".ai/prompts/project-setup.md", ".ai/prompts/ui-task.md", ".ai/ai-kit.json"]) {
     assert.equal(kinds(plan)[f], "create", f);
     assert.doesNotMatch(read(dir, f), /\{\{[A-Z_]+\}\}/, `${f} has an unfilled placeholder`);
   }

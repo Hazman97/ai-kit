@@ -126,6 +126,8 @@ never write secret values).
 | `project-setup.md` | fill `docs/PROJECT.md` for the first time ("setup the project docs") |
 | `docs-update.md` | update or sync docs with the code |
 | `frontend-setup.md` | create `docs/FRONTEND.md` (design tokens, styling rules, phone rules) |
+| `api-setup.md` | create `docs/API.md` (routes, auth, payloads, errors) |
+| `database-setup.md` | create `docs/DATABASE.md` (schema, other storage, access rules, migrations) |
 | `ui-task.md` | write a UI task for another agent (logic first, look second, screenshots as proof) |
 | `audit.md` | audit the app before a release (static + contract + running the app safely) |
 <!-- /ai-kit:rules -->

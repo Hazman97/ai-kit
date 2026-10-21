@@ -276,7 +276,7 @@ footer .wrap{display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
       <div class="card reveal">
         <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg></div>
         <h3>Prompts that already worked</h3>
-        <p>Five prompts for the big jobs: project setup, docs sync, frontend rules, UI tasks for a second agent, and a production-safe audit.</p>
+        <p>Seven prompts for the big jobs: project setup, docs sync, frontend, API and database docs, UI tasks for a second agent, and a production-safe audit.</p>
       </div>
     </div>
   </div>
@@ -292,7 +292,7 @@ footer .wrap{display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
     <div class="steps">
       <div class="step reveal"><div>
         <h3>Open a terminal in your project and run init</h3>
-        <p>ai-kit reads <code>package.json</code> and the lockfile in the root and in every sub-folder with its own manifest (<code>frontend/</code> + <code>backend/</code>, <code>apps/*</code> workspaces, Python, Go, Rust or PHP services): which part is the frontend and which the backend, the framework, Tailwind version, package manager and your real scripts. It then writes the files, filled in for this project.</p>
+        <p>ai-kit reads <code>package.json</code> and the lockfile in the root and in every sub-folder with its own manifest (<code>frontend/</code> + <code>backend/</code>, <code>apps/*</code> workspaces, Python, Go, Rust or PHP services): which part is the frontend and which the backend, the framework, Tailwind version (even from a CDN <code>&lt;script&gt;</code>), package manager, storage such as D1 or Firestore, and your real scripts, deploy included. It then writes the files, filled in for this project.</p>
         <div class="code"><pre><span class="g">cd</span> test
 npx github:Hazman97/ai-kit init</pre><button class="copy small" data-copy="npx github:Hazman97/ai-kit init">Copy</button></div>
         <p class="tip">Want a preview first? Add <code>--dry-run</code>. It prints what would change and writes nothing.</p>
@@ -301,7 +301,7 @@ npx github:Hazman97/ai-kit init</pre><button class="copy small" data-copy="npx g
         <h3>Ask your agent to fill the project doc</h3>
         <p>Once per project: open it in Claude Code, Gemini or Codex and send this one line (later sessions read the doc on their own). The agent reads your code and writes <code>docs/PROJECT.md</code>: what it is, the stack, commands, structure and key decisions.</p>
         <div class="code say-code"><pre>follow .ai/prompts/project-setup.md</pre><button class="copy small" data-copy="follow .ai/prompts/project-setup.md">Copy</button></div>
-        <p class="tip">Has a UI? Also send <code>follow .ai/prompts/frontend-setup.md</code> for design tokens, styling and phone rules.</p>
+        <p class="tip">Has a UI? Also send <code>follow .ai/prompts/frontend-setup.md</code> for design tokens, styling and phone rules. A backend with many routes or a real schema? <code>api-setup.md</code> and <code>database-setup.md</code> write <code>docs/API.md</code> and <code>docs/DATABASE.md</code>.</p>
       </div></div>
       <div class="step reveal"><div>
         <h3>Commit, then just work</h3>
@@ -333,6 +333,8 @@ git commit -m "Add ai-kit setup"</pre><button class="copy small" data-copy='git 
         <button role="tab" class="ind" data-f="p-setup">project-setup.md</button>
         <button role="tab" class="ind" data-f="p-docs">docs-update.md</button>
         <button role="tab" class="ind" data-f="p-front">frontend-setup.md</button>
+        <button role="tab" class="ind" data-f="p-api">api-setup.md</button>
+        <button role="tab" class="ind" data-f="p-db">database-setup.md</button>
         <button role="tab" class="ind" data-f="p-ui">ui-task.md</button>
         <button role="tab" class="ind" data-f="p-audit">audit.md</button>
       </div>
@@ -414,6 +416,20 @@ git commit -m "Add ai-kit setup"</pre><button class="copy small" data-copy='git 
         <div class="code say-code"><pre>follow .ai/prompts/frontend-setup.md</pre><button class="copy small" data-copy="follow .ai/prompts/frontend-setup.md">Copy</button></div>
       </div>
       <div class="prompt reveal">
+        <span class="file">api-setup.md</span>
+        <h3>API reference</h3>
+        <p>Writes <code>docs/API.md</code> from your routes: auth, every endpoint with its payload, webhooks and queues, real error codes and limits. Flags routes that look unprotected.</p>
+        <div class="say">Say to your agent</div>
+        <div class="code say-code"><pre>follow .ai/prompts/api-setup.md</pre><button class="copy small" data-copy="follow .ai/prompts/api-setup.md">Copy</button></div>
+      </div>
+      <div class="prompt reveal">
+        <span class="file">database-setup.md</span>
+        <h3>Database map</h3>
+        <p>Writes <code>docs/DATABASE.md</code> from the schema and migrations: tables, KV and buckets, access rules, how migrations ship. Never connects to a database.</p>
+        <div class="say">Say to your agent</div>
+        <div class="code say-code"><pre>follow .ai/prompts/database-setup.md</pre><button class="copy small" data-copy="follow .ai/prompts/database-setup.md">Copy</button></div>
+      </div>
+      <div class="prompt reveal">
         <span class="file">docs-update.md</span>
         <h3>Sync docs with code</h3>
         <p>Updates only, keeps your structure, checks every number and name against the source, and marks anything uncertain. Never writes secret values.</p>
@@ -486,7 +502,7 @@ git commit -m "Add ai-kit setup"</pre><button class="copy small" data-copy='git 
       <details><summary>What exactly does <code>update</code> change?</summary><p>Only what ai-kit manages: the rules block between the <code>&lt;!-- ai-kit:rules --&gt;</code> markers in <code>AGENTS.md</code>, the Docs Index block, and prompt files whose first line is the <code>ai-kit:managed</code> marker. Your Project notes, <code>LEARNINGS.md</code> and <code>docs/</code> are never touched.</p></details>
       <details><summary>How do I customise a prompt without losing it on update?</summary><p>Delete the first line of the prompt file (the <code>&lt;!-- ai-kit:managed … --&gt;</code> comment). From then on the file is yours and <code>update</code> leaves it alone.</p></details>
       <details><summary>Where do project-specific rules go?</summary><p>Under <code>## Project notes</code> at the bottom of <code>AGENTS.md</code>: decisions, commands, gotchas. Personal rules that apply to every project (your language, tone) belong in your agent's global file, e.g. <code>~/.claude/CLAUDE.md</code> or <code>~/.gemini/GEMINI.md</code>.</p></details>
-      <details><summary>Does it work for non-JavaScript projects?</summary><p>Yes. The rules and prompts are language-neutral. Without a <code>package.json</code>, ai-kit still detects Python, Go, Rust, PHP and others where it can, and leaves the commands table for your agent to fill in during project setup.</p></details>
+      <details><summary>Does it work for non-JavaScript projects?</summary><p>Yes. The rules and prompts are language-neutral. Without a <code>package.json</code>, ai-kit still detects Python, Go, Rust, PHP and others where it can. A Laravel app gets its <code>php artisan</code> / <code>composer run dev</code> commands; for the rest, your agent fills the commands table during project setup.</p></details>
       <details><summary>Is anything sent anywhere?</summary><p>No. ai-kit is a few hundred lines of plain Node.js with zero dependencies. It reads your project files locally and writes Markdown. Read the source on GitHub before you run it.</p></details>
       <details><summary>Can I make my own version?</summary><p>Fork the repo, edit the files in <code>templates/</code>, and run <code>npx github:&lt;you&gt;/ai-kit init</code>. It's MIT licensed.</p></details>
     </div>
@@ -604,6 +620,14 @@ const FILES = {
     text: "Writes docs/FRONTEND.md from your real UI so every agent styles screens the same way and nothing breaks on phones.",
     points: ["Design tokens, shared components, how data and errors are shown.", "Tailwind v3 or v4 rules, filled in from what init detected.", "Phone width (390 px), tap targets and dark mode checks."],
     peek: '<span class="c">Say:</span> follow .ai/prompts/frontend-setup.md' },
+  "p-api": { name: ".ai/prompts/api-setup.md", kit: "managed by ai-kit · detected backend filled in",
+    text: "Writes docs/API.md from the real routes so a frontend change or a second agent never guesses an endpoint or a payload.",
+    points: ["Auth, every route with method, body and response, events and webhooks.", "Real status codes, rate limits and an example request.", "Reports unprotected routes and client/server mismatches without fixing them."],
+    peek: '<span class="c">Say:</span> follow .ai/prompts/api-setup.md' },
+  "p-db": { name: ".ai/prompts/database-setup.md", kit: "managed by ai-kit · detected storage filled in",
+    text: "Writes docs/DATABASE.md from the schema and migrations so a schema change never breaks data nobody remembered.",
+    points: ["Tables, relations and indexes; KV, buckets and other storage.", "Access rules and how migrations reach production.", "Read-only: never connects to a database, never writes real rows."],
+    peek: '<span class="c">Say:</span> follow .ai/prompts/database-setup.md' },
   "p-ui": { name: ".ai/prompts/ui-task.md", kit: "managed by ai-kit",
     text: "The way to split UI work between two agents so it comes out clean: logic first, look second, screenshots as proof.",
     points: ["Agent A builds and tests the logic, plain but working.", "Agent B changes only the look, in a fixed list of files.", "B proves it with typecheck, tests, build and screenshots; A reviews."],
