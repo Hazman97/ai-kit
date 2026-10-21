@@ -49,6 +49,7 @@ your-project/
     └── prompts/         ← tools for bigger jobs, used when you ask for them
         ├── project-setup.md   fill docs/PROJECT.md from the code
         ├── docs-update.md     sync docs with code (update only, verify every claim)
+        ├── docs-migrate.md    merge docs the project already had into this layout (once)
         ├── frontend-setup.md  write docs/FRONTEND.md (design tokens, Tailwind rules, phone rules)
         ├── api-setup.md       write docs/API.md (routes, auth, payloads, errors)
         ├── database-setup.md  write docs/DATABASE.md (schema, storage, access rules, migrations)
@@ -84,6 +85,9 @@ Add `--dry-run` to any command to see what would change without changing anythin
 **Once per project** (later sessions read these docs on their own, and if you forget, the agent offers to do it when it finds the doc empty). Open the project with your agent and say:
 
 1. `follow .ai/prompts/project-setup.md` → it fills `docs/PROJECT.md` from the code.
+   The project already has its own docs (3 or more)? `follow .ai/prompts/docs-migrate.md` instead: it
+   merges what is still true into the ai-kit docs, checked against the code, and asks before deleting
+   the old files.
 2. For a project with a UI: `follow .ai/prompts/frontend-setup.md` → it writes `docs/FRONTEND.md`.
    A backend with many routes or a real schema: `api-setup.md` → `docs/API.md`, `database-setup.md` →
    `docs/DATABASE.md` (only when the project needs them).

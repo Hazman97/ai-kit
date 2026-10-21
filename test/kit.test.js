@@ -179,6 +179,13 @@ test("a project with its own overview doc, Capacitor, Prisma, ws and an AGENTS.m
   assert.equal(findings.filter((x) => x.level !== "info").length, 0, JSON.stringify(findings));
   assert.ok(findings.some((x) => /LEARNINGS\.md refers to rule #18/.test(x.message)));
   assert.deepEqual(init(dir).plan.actions.filter((a) => a.kind !== "keep").map((a) => a.path), [".ai/ai-kit.json"]);
+
+  // three or more docs of its own: merging them comes first, until docs/PROJECT.md is written
+  writeFileSync(join(dir, "docs/RUN_PROJECT.md"), "# Run\n");
+  assert.deepEqual(nextSteps(dir, f).map((s) => s.say), ["follow .ai/prompts/docs-migrate.md", "follow .ai/prompts/frontend-setup.md"]);
+  assert.ok(existsSync(join(dir, ".ai/prompts/docs-migrate.md")));
+  writeFileSync(join(dir, "docs/PROJECT.md"), "# movies\n\n## What it is\nA movie app.\n");
+  assert.deepEqual(nextSteps(dir, f).map((s) => s.say), ["follow .ai/prompts/frontend-setup.md"]);
 });
 
 test("init on a new project: every file, placeholders filled, an index of what exists", () => {

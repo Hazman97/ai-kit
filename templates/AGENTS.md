@@ -125,6 +125,7 @@ never write secret values).
 |---|---|
 | `project-setup.md` | fill `docs/PROJECT.md` for the first time ("setup the project docs") |
 | `docs-update.md` | update or sync docs with the code |
+| `docs-migrate.md` | merge the docs a project already had into the docs above, once ("consolidate the docs") |
 | `frontend-setup.md` | create `docs/FRONTEND.md` (design tokens, styling rules, phone rules) |
 | `api-setup.md` | create `docs/API.md` (routes, auth, payloads, errors) |
 | `database-setup.md` | create `docs/DATABASE.md` (schema, other storage, access rules, migrations) |

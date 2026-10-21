@@ -276,7 +276,7 @@ footer .wrap{display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
       <div class="card reveal">
         <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg></div>
         <h3>Prompts that already worked</h3>
-        <p>Seven prompts for the big jobs: project setup, docs sync, frontend, API and database docs, UI tasks for a second agent, and a production-safe audit.</p>
+        <p>Eight prompts for the big jobs: project setup, docs sync, merging old docs, frontend, API and database docs, UI tasks for a second agent, and a production-safe audit.</p>
       </div>
     </div>
   </div>
@@ -301,7 +301,7 @@ npx github:Hazman97/ai-kit init</pre><button class="copy small" data-copy="npx g
         <h3>Ask your agent to fill the project doc</h3>
         <p>Once per project: open it in Claude Code, Gemini or Codex and send this one line (later sessions read the doc on their own). The agent reads your code and writes <code>docs/PROJECT.md</code>: what it is, the stack, commands, structure and key decisions.</p>
         <div class="code say-code"><pre>follow .ai/prompts/project-setup.md</pre><button class="copy small" data-copy="follow .ai/prompts/project-setup.md">Copy</button></div>
-        <p class="tip">Has a UI? Also send <code>follow .ai/prompts/frontend-setup.md</code> for design tokens, styling and phone rules. A backend with many routes or a real schema? <code>api-setup.md</code> and <code>database-setup.md</code> write <code>docs/API.md</code> and <code>docs/DATABASE.md</code>.</p>
+        <p class="tip">Has a UI? Also send <code>follow .ai/prompts/frontend-setup.md</code> for design tokens, styling and phone rules. A backend with many routes or a real schema? <code>api-setup.md</code> and <code>database-setup.md</code> write <code>docs/API.md</code> and <code>docs/DATABASE.md</code>. Already have a pile of docs? <code>docs-migrate.md</code> merges them first.</p>
       </div></div>
       <div class="step reveal"><div>
         <h3>Commit, then just work</h3>
@@ -332,6 +332,7 @@ git commit -m "Add ai-kit setup"</pre><button class="copy small" data-copy='git 
         <div class="dir">.ai/prompts/</div>
         <button role="tab" class="ind" data-f="p-setup">project-setup.md</button>
         <button role="tab" class="ind" data-f="p-docs">docs-update.md</button>
+        <button role="tab" class="ind" data-f="p-migrate">docs-migrate.md</button>
         <button role="tab" class="ind" data-f="p-front">frontend-setup.md</button>
         <button role="tab" class="ind" data-f="p-api">api-setup.md</button>
         <button role="tab" class="ind" data-f="p-db">database-setup.md</button>
@@ -435,6 +436,13 @@ git commit -m "Add ai-kit setup"</pre><button class="copy small" data-copy='git 
         <p>Updates only, keeps your structure, checks every number and name against the source, and marks anything uncertain. Never writes secret values.</p>
         <div class="say">Say to your agent</div>
         <div class="code say-code"><pre>update the docs</pre><button class="copy small" data-copy="update the docs">Copy</button></div>
+      </div>
+      <div class="prompt reveal">
+        <span class="file">docs-migrate.md</span>
+        <h3>Merge the docs you already have</h3>
+        <p>Overviews, run guides, status pages and TODO lists that grew apart become one doc per topic. Every fact is checked against the code first, and old files are deleted only if you say yes.</p>
+        <div class="say">Say to your agent</div>
+        <div class="code say-code"><pre>follow .ai/prompts/docs-migrate.md</pre><button class="copy small" data-copy="follow .ai/prompts/docs-migrate.md">Copy</button></div>
       </div>
       <div class="prompt reveal">
         <span class="file">ui-task.md</span>
@@ -612,6 +620,10 @@ const FILES = {
     text: "Fills docs/PROJECT.md from the real code and config the first time. Use it right after init.",
     points: ["Reads AGENTS.md, README, config files, entry points and folders.", "Marks anything it could not confirm instead of guessing.", "Changes no code."],
     peek: '<span class="c">Say:</span> follow .ai/prompts/project-setup.md' },
+  "p-migrate": { name: ".ai/prompts/docs-migrate.md", kit: "managed by ai-kit · init suggests it when you have 3+ docs",
+    text: "A one-time merge of the docs a project already had into the ai-kit layout, so every agent reads one place per topic.",
+    points: ["Shows a table of old doc → new place and waits for your OK.", "Checks every fact against the code; where two docs disagree, the code decides.", "Finished-task logs go to git history; old files are deleted only with your yes."],
+    peek: '<span class="c">Say:</span> follow .ai/prompts/docs-migrate.md' },
   "p-docs": { name: ".ai/prompts/docs-update.md", kit: "managed by ai-kit",
     text: "Keeps docs in sync with the code. Rule R25 sends any \"update the docs\" request here.",
     points: ["Update only: keep the structure and headings.", "Every number, name, env var and endpoint is checked against the source.", "Never writes secret values."],
