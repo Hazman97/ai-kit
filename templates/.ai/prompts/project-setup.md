@@ -1,3 +1,4 @@
+<!-- ai-kit:managed — `ai-kit update` refreshes this file. Delete this line to keep your own edits. -->
 # Prompt: set up the project docs (first time)
 
 Use when the user says "setup the project docs", "fill PROJECT.md", or right after `ai-kit init`.

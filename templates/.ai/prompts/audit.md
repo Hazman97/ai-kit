@@ -1,3 +1,4 @@
+<!-- ai-kit:managed — `ai-kit update` refreshes this file. Delete this line to keep your own edits. -->
 # Prompt: audit before a release
 
 Use when the user asks for an audit, a QA pass, or "check everything before production". Read-only.

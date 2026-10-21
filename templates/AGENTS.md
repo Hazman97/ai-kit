@@ -3,7 +3,7 @@
 Instructions for every AI coding agent working in this repository (Claude Code, Gemini/Antigravity,
 Codex, Cursor…). `CLAUDE.md` and `GEMINI.md` only point here, so this is the single source.
 
-<!-- ai-kit:rules v1 — managed by ai-kit; `npx github:Hazman97/ai-kit update` refreshes this block. Put project notes below, not inside. -->
+<!-- ai-kit:rules v{{KIT_VERSION}} — managed by ai-kit; `npx github:Hazman97/ai-kit update` refreshes this block. Put project notes below, not inside. -->
 ## Working rules
 
 ### Priority

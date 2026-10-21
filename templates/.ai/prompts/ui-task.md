@@ -1,3 +1,4 @@
+<!-- ai-kit:managed — `ai-kit update` refreshes this file. Delete this line to keep your own edits. -->
 # Prompt: write a UI task for another agent
 
 How to split UI work so it comes out clean, including on phones (AGENTS.md R14–R15):

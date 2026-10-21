@@ -1,3 +1,4 @@
+<!-- ai-kit:managed — `ai-kit update` refreshes this file. Delete this line to keep your own edits. -->
 # Prompt: update the docs (sync docs with code)
 
 Referenced by AGENTS.md R25. Use when the user says "update the docs", "docs are outdated",

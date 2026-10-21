@@ -1,3 +1,4 @@
+<!-- ai-kit:managed — `ai-kit update` refreshes this file. Delete this line to keep your own edits. -->
 # Prompt: create docs/FRONTEND.md
 
 Use when the user says "setup frontend rules", "create FRONTEND.md", or before the first UI task for

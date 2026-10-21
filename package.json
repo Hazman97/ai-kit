@@ -1,0 +1,26 @@
+{
+  "name": "ai-kit",
+  "version": "1.0.0",
+  "description": "One command to give any project the same AI-agent setup: AGENTS.md rules, LEARNINGS.md, a base PROJECT.md, and prompts for docs, UI tasks and audits.",
+  "type": "module",
+  "bin": {
+    "ai-kit": "bin/ai-kit.js"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "templates"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": ["ai", "agents", "AGENTS.md", "claude", "gemini", "codex", "cursor", "llm", "docs"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Hazman97/ai-kit.git"
+  },
+  "license": "MIT"
+}
