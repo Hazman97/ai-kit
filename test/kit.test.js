@@ -144,6 +144,43 @@ test("detect: Laravel commands through artisan, Blade CDN Tailwind, Eloquent mig
   assert.equal(inertia.framework, "Vue 3");
 });
 
+test("a project with its own overview doc, Capacitor, Prisma, ws and an AGENTS.md from the old generic template", () => {
+  const dir = project({
+    "package.json": { name: "movies", scripts: { dev: "vite", "build:apk": "vite build && cap sync android" }, dependencies: { vue: "^3.5.0", "@capacitor/core": "^6.2.0" } },
+    "android/build.gradle": "",
+    "server/package.json": { dependencies: { express: "^4.18.0", ws: "^8.0.0", "@prisma/client": "^5.0.0" }, devDependencies: { prisma: "^5.0.0" } },
+    "server/prisma/schema.prisma": 'datasource db {\n  provider = "sqlite"\n  url = env("DATABASE_URL")\n}\n',
+    "docs/PROJECT_DOCUMENTATION.md": "# Project Documentation (PROJECT_DOCUMENTATION.md)\n",
+    "docs/USER_FLOW.md": "# User Flow (USER_FLOW.md)\n",
+    "LEARNINGS.md": "# LEARNINGS.md\n\n> Read at the start of every session (rule #18).\n",
+    "AGENTS.md": [
+      "# AGENTS.md", "", "## Working Principles", "", "1. Check first.", "",
+      "## Docs Index", "", "Skim `README.md` sekali di awal session untuk overview.", "",
+      "| Doc | Buka bila... |", "|---|---|", "| `docs/API_REFERENCE.md` | API |", "",
+      "**Regenerating?** ikut `<PATH>/docs-generation-prompt.md`.", "",
+    ].join("\n"),
+  });
+  const f = detect(dir);
+  assert.ok(f.stack.some((l) => l.includes("Mobile: Capacitor 6 (android/)")), f.stack.join("\n"));
+  assert.ok(f.stack.some((l) => l.includes("Realtime: ws · Data: Prisma (SQLite)")), f.stack.join("\n"));
+  assert.ok(f.commandRows.some(([t, c]) => t === "Build the mobile app" && c === "npm run build:apk"));
+
+  const { plan } = init(dir);
+  // R23: the project's own overview doc is the base doc; no second one is written
+  assert.equal(existsSync(join(dir, "docs/PROJECT.md")), false);
+  assert.equal(kinds(plan)["docs/PROJECT_DOCUMENTATION.md"], "keep");
+  assert.deepEqual(nextSteps(dir, f).map((s) => s.say), ["follow .ai/prompts/frontend-setup.md"]);
+  const agents = read(dir, "AGENTS.md");
+  assert.match(agents, /\| `docs\/PROJECT_DOCUMENTATION\.md` \| Once per session: what it is/);
+  assert.match(agents, /\| `docs\/USER_FLOW\.md` \| Tasks about User Flow \(edit this line/);
+  // the old template's prose is covered by R23–R25: not kept, no `<PATH>` placeholder left behind
+  assert.doesNotMatch(agents, /Skim `README\.md` sekali|<PATH>/);
+  const findings = doctor(dir).findings;
+  assert.equal(findings.filter((x) => x.level !== "info").length, 0, JSON.stringify(findings));
+  assert.ok(findings.some((x) => /LEARNINGS\.md refers to rule #18/.test(x.message)));
+  assert.deepEqual(init(dir).plan.actions.filter((a) => a.kind !== "keep").map((a) => a.path), [".ai/ai-kit.json"]);
+});
+
 test("init on a new project: every file, placeholders filled, an index of what exists", () => {
   const dir = project(VUE);
   const { plan } = init(dir);
