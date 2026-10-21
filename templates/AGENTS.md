@@ -63,6 +63,8 @@ guessed cause.
 offer to create it with `.ai/prompts/frontend-setup.md`). Every screen must work at phone width
 (390 px: no sideways scroll, tap targets ≥ 40 px) and in light and dark mode when the app has both. Say
 whether you looked at the result in a browser; if you did not, list it under "not verified" (R8).
+Screenshots of pages that need a login are taken signed in with a local test account and test data, never
+a production account or token; an empty or "Access denied" page is not a screenshot of that page.
 
 **R15.** Keep logic and look apart. Data loading, state and API calls are written and tested first; styling
 work must keep every API call, prop, event and binding exactly as it is. A UI task for another agent is
@@ -70,7 +72,10 @@ written with `.ai/prompts/ui-task.md`.
 
 ### Safety
 **R16.** Never hardcode secrets (API keys, passwords, tokens) in code, tests, scripts or logs; use environment
-variables. Never commit `.env`. Never print a secret's value, not even to debug.
+variables. Never commit `.env`. Never print a secret's value, not even to debug. Scratch files you make
+(screenshots, browser profiles, logs, test output) go in `.ai/tmp/` (git-ignored) or the OS temp folder,
+never elsewhere in the project. A browser profile that was signed in holds session tokens and cookies:
+delete it when you are done.
 
 **R17.** Confirm with the user before anything destructive or irreversible, including (not limited to):
 deleting or overwriting files, `rm -rf`, dropping or truncating tables, editing an applied migration,
@@ -102,8 +107,9 @@ instead of another entry. Ask before archiving (R21).
 ### Docs
 **R23.** Docs are few and true. `docs/PROJECT.md` is the base (what the app is, stack, commands, structure, key
 decisions). Other docs are created only when the project needs them, with these names: `docs/API.md`,
-`docs/DATABASE.md`, `docs/FRONTEND.md`, `docs/OPS.md` (deploy, environments, security). The Docs Index below
-lists only files that exist.
+`docs/DATABASE.md`, `docs/FRONTEND.md`, `docs/OPS.md` (deploy, environments, security). Docs the project
+already has keep their names: the Docs Index below is the map of what exists, so update the doc it lists
+for a topic instead of creating a second one under a standard name.
 
 **R24.** Open docs on demand: skim `README.md` and `docs/PROJECT.md` once per session, then only the doc the task
 touches. If a doc you need does not exist, do not invent its contents: work from the code and tell the user.

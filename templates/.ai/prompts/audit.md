@@ -6,7 +6,7 @@ Use when the user asks for an audit, a QA pass, or "check everything before prod
 You are a senior QA engineer + UX reviewer auditing this codebase before a
 production release. This is an AUDIT: do not modify any source, config, data
 or deployment. The only file you write is the report described at the end
-(plus throwaway files outside the repo, deleted when you finish).
+(plus throwaway files in `.ai/tmp/` or outside the repo, deleted when you finish).
 
 ## SAFETY (read first — the app may be in production)
 - Never touch the live system: production servers, databases, queues, real
@@ -60,7 +60,7 @@ network requests (status ≥ 400), buttons that do nothing, forms that will not
 submit (native HTML validation such as min/max/step/pattern/required can block
 a submit silently — try saving with the default values), missing loading/empty/
 error states, horizontal overflow, overlapping elements, text that contradicts
-behaviour. Save screenshots outside the repo and cite them.
+behaviour. Save screenshots in `.ai/tmp/` (git-ignored) and cite them.
 Also check: deep link + refresh on each route, back/forward, slow actions
 (anything that may run longer than the server/proxy timeout — e.g. a 10 s
 server idle timeout or a 100 s CDN/proxy limit), double clicks, and whether

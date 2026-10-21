@@ -292,7 +292,7 @@ footer .wrap{display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
     <div class="steps">
       <div class="step reveal"><div>
         <h3>Open a terminal in your project and run init</h3>
-        <p>ai-kit looks at <code>package.json</code> and the lockfile: framework, Tailwind version, package manager and your real scripts. It then writes the files, filled in for this project.</p>
+        <p>ai-kit reads <code>package.json</code> and the lockfile in the root and in every sub-folder with its own manifest (<code>frontend/</code> + <code>backend/</code>, <code>apps/*</code> workspaces, Python, Go, Rust or PHP services): which part is the frontend and which the backend, the framework, Tailwind version, package manager and your real scripts. It then writes the files, filled in for this project.</p>
         <div class="code"><pre><span class="g">cd</span> test
 npx github:Hazman97/ai-kit init</pre><button class="copy small" data-copy="npx github:Hazman97/ai-kit init">Copy</button></div>
         <p class="tip">Want a preview first? Add <code>--dry-run</code>. It prints what would change and writes nothing.</p>
@@ -451,8 +451,8 @@ git commit -m "Add ai-kit setup"</pre><button class="copy small" data-copy='git 
         <p><b>Set up a project.</b> Detects the stack and adds the files. Files that already exist are kept.</p>
       </div>
       <div class="cmdrow reveal">
-        <div class="code"><pre>npx github:Hazman97/ai-kit init --merge</pre><button class="copy small" data-copy="npx github:Hazman97/ai-kit init --merge">Copy</button></div>
-        <p><b>Convert an older setup.</b> Adds the rules to an existing <code>AGENTS.md</code>, keeps your own sections, and saves <code>*.ai-kit-backup</code> copies.</p>
+        <div class="code"><pre>npx github:Hazman97/ai-kit init</pre><button class="copy small" data-copy="npx github:Hazman97/ai-kit init">Copy</button></div>
+        <p><b>Convert an older setup.</b> Adds the rules to an existing <code>AGENTS.md</code>, keeps your own sections, and saves backups in <code>.ai/backup/</code>.</p>
       </div>
       <div class="cmdrow reveal">
         <div class="code"><pre>npx github:Hazman97/ai-kit update</pre><button class="copy small" data-copy="npx github:Hazman97/ai-kit update">Copy</button></div>
@@ -482,7 +482,7 @@ git commit -m "Add ai-kit setup"</pre><button class="copy small" data-copy='git 
       <h2>Questions people ask</h2>
     </div>
     <div class="faq">
-      <details><summary>Will it overwrite my existing files?</summary><p>No. <code>init</code> keeps every file that already exists. Only <code>init --merge</code> changes an existing <code>AGENTS.md</code>, <code>CLAUDE.md</code> or <code>GEMINI.md</code>, and it saves a <code>*.ai-kit-backup</code> copy of each first. Add <code>--dry-run</code> to see the plan before anything is written.</p></details>
+      <details><summary>Will it overwrite my existing files?</summary><p>Your own files are never overwritten: <code>LEARNINGS.md</code>, <code>docs/</code> and prompts you edited are kept as they are. An existing <code>AGENTS.md</code>, <code>CLAUDE.md</code> or <code>GEMINI.md</code> gets the latest rules and the import line while keeping its own sections, and a copy of each is saved in <code>.ai/backup/</code> first; <code>--no-merge</code> leaves them untouched. The one other change: an ai-kit block is appended to <code>.gitignore</code> so screenshots and browser profiles agents create are never committed. Add <code>--dry-run</code> to see the plan before anything is written.</p></details>
       <details><summary>What exactly does <code>update</code> change?</summary><p>Only what ai-kit manages: the rules block between the <code>&lt;!-- ai-kit:rules --&gt;</code> markers in <code>AGENTS.md</code>, the Docs Index block, and prompt files whose first line is the <code>ai-kit:managed</code> marker. Your Project notes, <code>LEARNINGS.md</code> and <code>docs/</code> are never touched.</p></details>
       <details><summary>How do I customise a prompt without losing it on update?</summary><p>Delete the first line of the prompt file (the <code>&lt;!-- ai-kit:managed … --&gt;</code> comment). From then on the file is yours and <code>update</code> leaves it alone.</p></details>
       <details><summary>Where do project-specific rules go?</summary><p>Under <code>## Project notes</code> at the bottom of <code>AGENTS.md</code>: decisions, commands, gotchas. Personal rules that apply to every project (your language, tone) belong in your agent's global file, e.g. <code>~/.claude/CLAUDE.md</code> or <code>~/.gemini/GEMINI.md</code>.</p></details>
@@ -509,7 +509,7 @@ git commit -m "Add ai-kit setup"</pre><button class="copy small" data-copy='git 
           <div class="code"><pre>npx github:Hazman97/ai-kit doctor</pre><button class="copy small" data-copy="npx github:Hazman97/ai-kit doctor">Copy</button></div>
         </li>
       </ol>
-      <p style="color:var(--muted);margin:16px 0 0">Projek lama yang dah ada <code>AGENTS.md</code>? Guna <code>init --merge</code>. Bahagian anda dikekalkan dan backup disimpan sebagai <code>*.ai-kit-backup</code>. Fail yang sedia ada tak akan ditindih.</p>
+      <p style="color:var(--muted);margin:16px 0 0">Projek yang dah ada <code>AGENTS.md</code>? Jalankan <code>init</code> macam biasa. Peraturan terbaru dimasukkan, bahagian anda dikekalkan, dan backup disimpan dalam <code>.ai/backup/</code>.</p>
     </div>
   </div>
 </section>
@@ -578,7 +578,7 @@ const FILES = {
     peek: '<span class="h"># AGENTS.md</span>\n<span class="c">&lt;!-- ai-kit:rules v1.0.0 — managed by ai-kit --&gt;</span>\n<span class="h">## Working rules</span>\n<span class="k">**R8.**</span> Verify before you say "done". Report the\ncommands you actually ran and their results…\n<span class="c">&lt;!-- /ai-kit:rules --&gt;</span>\n\n<span class="h">## Docs Index</span>\n| `docs/PROJECT.md` | Once per session… |\n\n<span class="h">## Project notes</span>\n<span class="c">Your decisions, commands and gotchas.</span>' },
   claude: { name: "CLAUDE.md", kit: "yours",
     text: "Claude Code reads CLAUDE.md. This one just imports AGENTS.md, so Claude follows the same rules as every other agent.",
-    points: ["Add Claude-only notes below the import line if you need them.", "<code>init --merge</code> adds the import line to an existing CLAUDE.md and keeps the rest."],
+    points: ["Add Claude-only notes below the import line if you need them.", "<code>init</code> adds the import line to an existing CLAUDE.md and keeps the rest."],
     peek: '@AGENTS.md\n\n<span class="c">Claude-specific notes (optional) go here.</span>' },
   gemini: { name: "GEMINI.md", kit: "yours",
     text: "Gemini CLI and Antigravity read GEMINI.md. Like CLAUDE.md, it imports AGENTS.md so the rules are shared.",

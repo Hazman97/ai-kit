@@ -35,7 +35,7 @@ the brackets, and give the other agent the short prompt at the bottom.
 - Follow `docs/FRONTEND.md` (design tokens only, the project's styling rules).
 - Do not edit: [logic files, API client, stores, backend, shared helpers].
 - No new packages. Never delete or move files. Do not commit.
-- Screenshots go outside the repo (or are deleted before handing back).
+- Screenshots and browser profiles go in `.ai/tmp/` (git-ignored); delete the profile when done.
 
 ## Check before you hand back
 - {{CHECK_COMMANDS}}
@@ -50,6 +50,6 @@ the brackets, and give the other agent the short prompt at the bottom.
 Read tasks/NNN-short-name.md and do the whole task.
 Edit only the files it lists; keep every API call, prop, event and binding as they are.
 Follow docs/FRONTEND.md. Before handing back: typecheck, tests, build, and screenshots
-(desktop + 390 px, light + dark) of the pages it names, saved outside the repo.
+(desktop + 390 px, light + dark) of the pages it names, saved in .ai/tmp/.
 Do not commit. Tell me when you are done.
 ```

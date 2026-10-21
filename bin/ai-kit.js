@@ -5,10 +5,10 @@ import { VERSION, doctor, init, update } from "../lib/commands.js";
 const HELP = `ai-kit ${VERSION} — the same AI-agent setup in every project
 
 Usage (run inside your project folder):
-  npx github:Hazman97/ai-kit init             add AGENTS.md, CLAUDE.md, GEMINI.md, LEARNINGS.md,
-                                              docs/PROJECT.md and .ai/prompts/ (never overwrites)
-  npx github:Hazman97/ai-kit init --merge     also convert an existing AGENTS.md / CLAUDE.md / GEMINI.md
-                                              (backups are kept as *.ai-kit-backup)
+  npx github:Hazman97/ai-kit init             set up a project, or bring it to the latest version:
+                                              new files are created; an existing AGENTS.md gets the
+                                              latest rules and keeps its own notes (backup in .ai/backup/)
+  npx github:Hazman97/ai-kit init --no-merge  leave an existing AGENTS.md / CLAUDE.md / GEMINI.md untouched
   npx github:Hazman97/ai-kit update           newer rules + prompts; your notes are not touched
   npx github:Hazman97/ai-kit doctor           check for missing docs, placeholders, stale index, secrets
   npx github:Hazman97/ai-kit doctor --fix     also regenerate the Docs Index
@@ -56,7 +56,8 @@ if (flag("-v") || flag("--version")) {
 } else if (!cmd || flag("-h") || flag("--help")) {
   console.log(HELP);
 } else if (cmd === "init") {
-  const { plan, facts } = init(dir, { dryRun, merge: flag("--merge") });
+  // converting an existing AGENTS.md is the default; --merge is still accepted from 1.0 docs
+  const { plan, facts } = init(dir, { dryRun, merge: !flag("--no-merge") });
   showFacts(facts);
   console.log(bold("Files:"));
   showPlan(plan);

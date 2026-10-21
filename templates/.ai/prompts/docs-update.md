@@ -26,6 +26,10 @@ Referenced by AGENTS.md R25. Use when the user says "update the docs", "docs are
    Use relative links (`docs/API.md`, `src/app.ts`), never absolute `file:///` paths.
 
 ## Which doc to update (create a new one only if the user agrees: AGENTS.md R23)
+The Docs Index in `AGENTS.md` is the map of the docs this project has. If a topic already has a doc there
+under another name (`docs/API_REFERENCE.md`, `docs/DEPLOY.md`…), update that one; the names below are only
+for a topic that has no doc yet.
+
 | Doc | Update when |
 |---|---|
 | `README.md` | setup, scripts or folder structure change |

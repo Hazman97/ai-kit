@@ -69,8 +69,8 @@ Run them inside the project folder (or pass `--dir <path>`).
 
 | Command | What it does |
 |---|---|
-| `npx github:Hazman97/ai-kit init` | Detects the stack (Vue/React/Next/Nuxt/Svelte…, Tailwind v3/v4, package manager, scripts) and adds the files above. Existing files are kept. |
-| `npx github:Hazman97/ai-kit init --merge` | Also converts an existing `AGENTS.md` / `CLAUDE.md` / `GEMINI.md`: adds the rules and the import line, keeps your own sections, saves `*.ai-kit-backup` copies. |
+| `npx github:Hazman97/ai-kit init` | Detects the stack in the root **and every sub-folder with its own manifest** (a `frontend/` + `backend/` repo, `apps/*` workspaces, a Python or Go API next to a React app…), labels each part frontend / backend / fullstack / mobile, and adds the files above. Existing files are kept; `.gitignore` gets a small ai-kit block so agent scratch files (screenshots, browser profiles) are never committed. |
+| `npx github:Hazman97/ai-kit init` (again, or on a project that already has an `AGENTS.md`) | Brings it to the latest version: an ai-kit `AGENTS.md` gets the newest rules; any other `AGENTS.md` / `CLAUDE.md` / `GEMINI.md` is backed up to `.ai/backup/`, gets the rules and the import line, and keeps its own sections and Docs Index texts. `--no-merge` leaves them untouched. |
 | `npx github:Hazman97/ai-kit update` | Newer rules and prompts from this repo. Your notes and your own prompts are not touched. |
 | `npx github:Hazman97/ai-kit doctor` | Checks: docs referenced but missing, unfilled placeholders, old doc names, a stale Docs Index, agents that do not read AGENTS.md, a long LEARNINGS.md, and **`.env` files committed to git**. Exit code 1 on errors (handy in CI). |
 | `npx github:Hazman97/ai-kit doctor --fix` | Also regenerates the Docs Index. |
@@ -110,7 +110,7 @@ npx github:Hazman97/ai-kit update    # tarik peraturan terbaru (nota projek tak 
 ```
 
 Lepas `init`, beritahu AI: **"follow .ai/prompts/project-setup.md"**. Dia akan isi `docs/PROJECT.md` dari kod.
-Untuk projek lama yang dah ada `AGENTS.md`, guna `init --merge`. Backup disimpan sebagai `*.ai-kit-backup`.
+Projek yang dah ada `AGENTS.md`? Jalankan `init` macam biasa: peraturan terbaru dimasukkan, nota projek anda dikekalkan, dan backup disimpan dalam `.ai/backup/`. Guna `--no-merge` kalau tak nak fail itu diubah.
 
 ## Develop
 

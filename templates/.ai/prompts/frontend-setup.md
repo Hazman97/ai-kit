@@ -5,6 +5,14 @@ Use when the user says "setup frontend rules", "create FRONTEND.md", or before t
 another agent. `docs/FRONTEND.md` is what keeps every screen consistent and phone-proof, whichever AI edits
 it. Write it from this project's real code; do not change any code.
 
+## 0. If `docs/FRONTEND.md` already exists
+Rearrange it into the sections below; do not write it from scratch (the same rule as `docs-update.md`).
+- Keep every fact that is still true. Check each one against the code (R6); fix or mark what is wrong.
+- What is not a rule (route lists, component catalogues, library gotchas such as "DOMPurify strips `width`
+  unless…") goes in a `## Map and gotchas` section at the end. Never drop a gotcha: it is the part nobody
+  can rebuild from the code.
+- In your report, list what you moved, what you corrected, and anything you removed and why.
+
 ## 1. Read first
 - The styling setup: global CSS, CSS variables / theme tokens, the Tailwind config or `@theme` block,
   the component library (if any), the icon set, dark mode handling.
@@ -51,6 +59,8 @@ screenshots at desktop and 390 px.
 
 ## 3. Rules for writing it
 - Only facts you saw in the code; mark anything unsure with `⚠️ Unconfirmed`.
-- Keep it under ~80 lines: it is read before every UI task.
+- Keep the rule sections under ~80 lines: they are read before every UI task (`Map and gotchas` may add more).
+- In a repo with several packages, write the frontend package's paths and commands (e.g. `cd web && npm run build`),
+  not the root's.
 - Add `docs/FRONTEND.md` to the Docs Index in `AGENTS.md` ("Open when: any UI, component or styling task").
 - Report what you wrote and anything inconsistent you noticed in the existing UI (do not fix it).
