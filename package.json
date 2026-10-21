@@ -17,10 +17,24 @@
   "scripts": {
     "test": "node --test"
   },
-  "keywords": ["ai", "agents", "AGENTS.md", "claude", "gemini", "codex", "cursor", "llm", "docs"],
+  "keywords": [
+    "ai",
+    "agents",
+    "AGENTS.md",
+    "claude-code",
+    "gemini",
+    "codex",
+    "cursor",
+    "prompts",
+    "cli"
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Hazman97/ai-kit.git"
+    "url": "git+https://github.com/Hazman97/ai-kit.git"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "homepage": "https://hazman97.github.io/ai-kit/",
+  "bugs": {
+    "url": "https://github.com/Hazman97/ai-kit/issues"
+  }
 }

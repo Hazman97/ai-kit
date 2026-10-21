@@ -1,13 +1,38 @@
+<div align="center">
+
 # ai-kit
 
-One command gives any project the same AI-agent setup, so Claude Code, Gemini / Antigravity, Codex and
-Cursor all follow the same rules, read the same docs and use the same proven prompts.
+**One setup for every AI coding agent.**
+
+One command gives any project the same rules, docs and proven prompts, so Claude Code, Gemini / Antigravity,
+Codex and Cursor all work the same careful way, from the first session.
+
+[![Website](https://img.shields.io/badge/website-hazman97.github.io%2Fai--kit-7c5cff)](https://hazman97.github.io/ai-kit/)
+[![MIT licence](https://img.shields.io/badge/licence-MIT-22c55e)](LICENSE)
+![Node 18+](https://img.shields.io/badge/node-%E2%89%A518-0ea5c6)
+![Zero dependencies](https://img.shields.io/badge/dependencies-0-a855f7)
+
+<img src="docs/assets/demo.webp" width="760" alt="ai-kit init detects a Vue + Tailwind v4 + Bun project and creates AGENTS.md, CLAUDE.md, GEMINI.md, LEARNINGS.md, docs/PROJECT.md and five prompts; doctor then checks the setup.">
+
+</div>
+
+## Quick start
+
+Inside your project folder:
 
 ```bash
 npx github:Hazman97/ai-kit init
 ```
 
-No install, no dependencies: Node.js 18+ is enough.
+Then tell your AI agent:
+
+```text
+follow .ai/prompts/project-setup.md
+```
+
+That's it: your agent fills `docs/PROJECT.md` from the code, and every agent now follows the same rules.
+No install and no dependencies; Node.js 18+ is enough. **Full guide with examples:
+[hazman97.github.io/ai-kit](https://hazman97.github.io/ai-kit/)**
 
 ## What you get
 
@@ -93,5 +118,10 @@ Untuk projek lama yang dah ada `AGENTS.md`, guna `init --merge`. Backup disimpan
 npm test                      # node:test, no dependencies
 node bin/ai-kit.js init --dir ../some-project --dry-run
 ```
+
+- The website is `docs/index.html` (plain HTML, served by GitHub Pages from `/docs`).
+- The demo animation `docs/assets/demo.webp` is made from `scripts/demo-terminal.html`: a headless browser
+  calls `render(t)` for each frame and screenshots it, then
+  `ffmpeg -framerate 12 -i f%04d.png -c:v libwebp_anim -q:v 82 -loop 0 demo.webp`.
 
 MIT licence.

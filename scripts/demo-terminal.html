@@ -1,0 +1,71 @@
+<!doctype html>
+<!-- Source of docs/assets/demo.webp. A headless browser calls render(t) for each frame
+     (0 … DURATION seconds) and screenshots the 880×620 window; ffmpeg joins the frames. -->
+<html><head><meta charset="utf-8">
+<style>
+  html,body{margin:0;background:transparent}
+  body{width:880px;height:620px;font:15px/1.55 "Cascadia Mono","JetBrains Mono",Consolas,monospace;-webkit-font-smoothing:antialiased}
+  .win{position:absolute;inset:0;border-radius:14px;background:#0d1117;border:1px solid #2a3140;overflow:hidden}
+  .bar{height:40px;display:flex;align-items:center;gap:8px;padding:0 16px;background:#161b22;border-bottom:1px solid #222a36}
+  .dot{width:12px;height:12px;border-radius:50%}
+  .title{margin:0 auto;color:#7d8590;font-size:13px;transform:translateX(-30px)}
+  .screen{padding:16px 22px;color:#c9d1d9;white-space:pre}
+  .p{color:#7ee787}.d{color:#7d8590}.g{color:#3fb950}.b{color:#e6edf3;font-weight:700}.c{color:#79c0ff}.m{color:#d2a8ff}
+  .cur{display:inline-block;width:9px;height:18px;background:#c9d1d9;vertical-align:-3px}
+</style></head>
+<body>
+<div class="win">
+  <div class="bar"><span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span><span class="title">~/projects/my-shop</span></div>
+  <div class="screen" id="s"></div>
+</div>
+<script>
+const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+const PROMPT = '<span class="p">➜</span> <span class="c">my-shop</span> ';
+// The real output of `init` on a Vue + Tailwind v4 + Bun project (shortened).
+const INIT = [
+  "",
+  '<span class="b">Project:</span> my-shop',
+  "  · Runtime: Bun (package manager: bun)",
+  "  · Frontend: Vue 3 + Vite",
+  "  · Styling: Tailwind CSS v4",
+  "  · commands: dev = bun run dev, build = bun run build, test = bun run test",
+  "",
+  '<span class="b">Files:</span>',
+  ...["AGENTS.md", "CLAUDE.md", "GEMINI.md", "LEARNINGS.md", "docs/PROJECT.md", ".ai/prompts/project-setup.md", ".ai/prompts/frontend-setup.md", ".ai/prompts/ui-task.md", ".ai/prompts/audit.md"].map((f) => `  <span class="g">+ created</span>  ${f}`),
+  "",
+  '<span class="b">Next:</span> open the project with your AI agent and say:',
+  '  <span class="m">"follow .ai/prompts/project-setup.md"</span>  <span class="d">→ fills docs/PROJECT.md</span>',
+];
+const DOCTOR = [
+  "",
+  '<span class="b">ai-kit 1.0.0: doctor</span>',
+  "",
+  '  <span class="d">i</span> docs/PROJECT.md still has empty sections.',
+  '      <span class="d">→ ask your agent: "follow .ai/prompts/project-setup.md"</span>',
+  "",
+  "  0 error(s), 0 warning(s), 1 note(s).",
+];
+const SCENES = [
+  { cmd: "npx github:Hazman97/ai-kit init", out: INIT, line: 0.16, hold: 2.8 },
+  { cmd: "npx github:Hazman97/ai-kit doctor", out: DOCTOR, line: 0.25, hold: 2.6 },
+];
+const TYPE = 0.055, PAUSE = 0.5;
+const len = (sc) => 0.5 + sc.cmd.length * TYPE + PAUSE + sc.out.length * sc.line + sc.hold;
+window.DURATION = SCENES.reduce((a, sc) => a + len(sc), 0);
+window.render = (t) => {
+  let i = 0;
+  while (i < SCENES.length - 1 && t >= len(SCENES[i])) { t -= len(SCENES[i]); i++; }
+  const sc = SCENES[i];
+  const typed = Math.max(0, Math.min(sc.cmd.length, Math.floor((t - 0.5) / TYPE)));
+  const tOut = t - 0.5 - sc.cmd.length * TYPE - PAUSE;
+  const shown = tOut < 0 ? 0 : Math.min(sc.out.length, Math.floor(tOut / sc.line) + 1);
+  const on = typed < sc.cmd.length || Math.floor(t / 0.5) % 2 === 0;
+  const cursor = `<span class="cur" style="opacity:${on ? 1 : 0}"></span>`;
+  let html = PROMPT + esc(sc.cmd.slice(0, typed)) + (shown === 0 ? cursor : "");
+  if (shown) html += "\n" + sc.out.slice(0, shown).join("\n");
+  if (shown === sc.out.length) html += "\n\n" + PROMPT + cursor;
+  document.getElementById("s").innerHTML = html;
+};
+render(0);
+</script>
+</body></html>
