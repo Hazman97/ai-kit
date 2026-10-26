@@ -27,6 +27,21 @@ const dir = resolve(dirArg >= 0 ? args[dirArg + 1] ?? "." : ".");
 const cmd = args.find((a, i) => !a.startsWith("-") && args[i - 1] !== "--dir");
 const dryRun = flag("--dry-run");
 
+// Refuse anything not understood before touching files: `ai-kit update ../other` used to run on the current
+// folder because the extra word was ignored.
+const FLAGS = new Set(["--dry-run", "--dir", "--no-merge", "--merge", "--fix", "-h", "--help", "-v", "--version"]);
+const words = args.filter((a, i) => !a.startsWith("-") && args[i - 1] !== "--dir");
+const problems = [
+  ...args.filter((a) => a.startsWith("-") && !FLAGS.has(a)).map((a) => `unknown option "${a}"`),
+  ...words.slice(1).map((w) => `unexpected argument "${w}" (to work on another folder use --dir ${w})`),
+];
+if (dirArg >= 0 && (args[dirArg + 1] === undefined || args[dirArg + 1].startsWith("-"))) problems.push("--dir needs a folder");
+if (problems.length) {
+  for (const p of problems) console.error(`ai-kit: ${p}`);
+  console.error(`Nothing was changed. Run "ai-kit --help" for usage.`);
+  process.exit(1);
+}
+
 const color = process.stdout.isTTY && !process.env.NO_COLOR;
 const paint = (code, s) => (color ? `\x1b[${code}m${s}\x1b[0m` : s);
 const green = (s) => paint(32, s);

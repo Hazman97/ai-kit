@@ -144,6 +144,41 @@ test("detect: Laravel commands through artisan, Blade CDN Tailwind, Eloquent mig
   assert.equal(inertia.framework, "Vue 3");
 });
 
+test("detect: Laravel without npm runs through php artisan serve and lints with Pint", () => {
+  // The default skeleton keeps a composer `dev` script that calls `npx @laravel/multiplex`; without package.json
+  // the project does not use npm, so it must not be suggested.
+  const f = detect(project({
+    "composer.json": { require: { "laravel/framework": "^13.0" }, "require-dev": { "laravel/pint": "^1.27" }, scripts: { dev: ["@php artisan dev"] } },
+    "resources/views/layouts/app.blade.php": "<link rel=\"stylesheet\" href=\"/css/app.css\">",
+  }));
+  assert.equal(f.framework, "Blade (Laravel)");
+  assert.equal(f.commands.dev, "php artisan serve");
+  assert.equal(f.commands.test, "php artisan test");
+  assert.equal(f.commands.lint, "vendor/bin/pint --test");
+  assert.equal(f.commands.build, null);
+});
+
+test("cli: unknown arguments are refused before any file is written", () => {
+  const bin = join(import.meta.dirname, "..", "bin", "ai-kit.js");
+  const dir = project({ "package.json": { name: "app" } });
+  const other = project({});
+  const run = (...args) => spawnSync(process.execPath, [bin, ...args], { cwd: dir, encoding: "utf8" });
+
+  for (const args of [["update", other], ["init", "extra"], ["update", "--dri-run"], ["doctor", "--dir"]]) {
+    const r = run(...args);
+    assert.equal(r.status, 1, `${args.join(" ")} should fail\n${r.stdout}${r.stderr}`);
+    assert.match(r.stderr, /Nothing was changed/);
+    assert.ok(!existsSync(join(dir, "AGENTS.md")) && !existsSync(join(dir, ".ai")), `${args.join(" ")} wrote files`);
+  }
+  assert.match(run("update", other).stderr, /use --dir/);
+
+  // The documented forms still work
+  assert.equal(run("init", "--dir", other, "--dry-run").status, 0);
+  assert.equal(run("--version").status, 0);
+  assert.equal(run("init", "--dry-run").status, 0);
+  assert.ok(!existsSync(join(dir, "AGENTS.md")), "dry run wrote files");
+});
+
 test("a project with its own overview doc, Capacitor, Prisma, ws and an AGENTS.md from the old generic template", () => {
   const dir = project({
     "package.json": { name: "movies", scripts: { dev: "vite", "build:apk": "vite build && cap sync android" }, dependencies: { vue: "^3.5.0", "@capacitor/core": "^6.2.0" } },
