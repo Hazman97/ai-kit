@@ -68,7 +68,8 @@ your-project/
 
 ## Commands
 
-Run them inside the project folder (or pass `--dir <path>`).
+Run them inside the project folder (or pass `--dir <path>`). A folder given any other way
+(`ai-kit update ../other`) or an unknown option is refused before anything is written.
 
 | Command | What it does |
 |---|---|
