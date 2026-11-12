@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, test } from "node:test";
-import { VERSION, doctor, init, nextSteps, projectPart, update } from "../lib/commands.js";
+import { SKILL, VERSION, doctor, init, nextSteps, projectPart, update } from "../lib/commands.js";
 import { detect } from "../lib/detect.js";
 
 const dirs = [];
@@ -450,4 +450,160 @@ test("next steps: the one-time setup prompts are shown only until each doc is wr
   const api = project({ "package.json": { name: "api", dependencies: { express: "^5.0.0" } } });
   const r = init(api);
   assert.deepEqual(nextSteps(api, r.facts).map((s) => s.say), ["follow .ai/prompts/project-setup.md"], "no UI, no frontend-setup");
+});
+
+// ---------------------------------------------------------------- Cloudflare (1.3.0)
+
+const WORKER = {
+  "package.json": { name: "pay", scripts: { dev: "wrangler dev", deploy: "wrangler deploy" }, devDependencies: { wrangler: "^4.0.0" } },
+  "wrangler.toml": 'name = "pay"\nmain = "src/index.ts"\n[[d1_databases]]\nbinding = "DB"\n',
+  "src/index.ts": "export default { async fetch(req, env) { return new Response('ok'); } };\n",
+};
+/** A runner that records calls instead of starting npx. */
+const spy = () => {
+  const calls = [];
+  const run = (cmd, args, opts) => (calls.push({ cmd, args, opts }), { status: 0 });
+  return { calls, run };
+};
+const nodeHasSkillsCli = (() => {
+  const [major, minor] = process.versions.node.split(".").map(Number);
+  return major > 22 || (major === 22 && minor >= 20);
+})();
+
+test("cloudflare detection: wrangler config, Pages functions, email handler, Access, sub-packages; none for other stacks", () => {
+  // a wrangler config is enough, even without the wrangler dependency
+  const cf = detect(project({ "wrangler.jsonc": '{ "name": "x", "main": "src/i.ts", "kv_namespaces": [] }', "package.json": { name: "x" } })).cloudflare;
+  assert.deepEqual(cf.products, ["Workers", "KV"]);
+
+  assert.ok(detect(project({ "package.json": { name: "p" }, "functions/api/hello.ts": "export const onRequest = () => {}", "public/_routes.json": "{}" })).cloudflare.products.includes("Pages"));
+
+  const mail = detect(project({ ...WORKER, "src/index.ts": "export default { async email(message, env, ctx) { await message.forward('a@b.c'); } };" })).cloudflare;
+  assert.ok(mail.products.includes("Email Workers"));
+
+  const access = detect(project({ ...WORKER, "src/auth.ts": "const jwt = req.headers.get('Cf-Access-Jwt-Assertion');" })).cloudflare;
+  assert.ok(access.access && access.products.includes("Access"));
+  assert.deepEqual(access.accessOnWorkersDev, ["."], "workers.dev is on unless the config turns it off");
+  const off = detect(project({ ...WORKER, "wrangler.toml": `${WORKER["wrangler.toml"]}workers_dev = false\n`, "src/auth.ts": "h.get('cf-access-jwt-assertion')" })).cloudflare;
+  assert.deepEqual(off.accessOnWorkersDev, []);
+
+  // a worker/ folder inside a Vue repo makes the whole project a Cloudflare project
+  const mono = detect(project({ "package.json": { name: "app", dependencies: { vue: "^3.5.0" } }, "worker/package.json": { name: "w" }, "worker/wrangler.toml": 'name = "w"\nmain = "src/i.ts"\n' }));
+  assert.deepEqual(mono.cloudflare.paths, ["worker"]);
+  assert.ok(mono.stack.some((l) => l.includes("Cloudflare: Workers")));
+
+  for (const files of [VUE, { "composer.json": { require: { "laravel/framework": "^11.0" } } }, { "pyproject.toml": "[project]\nname='x'" }]) {
+    assert.equal(detect(project(files)).cloudflare, null);
+  }
+});
+
+test("cloudflare init: the security-audit prompt, an AGENTS.md row and rule, and a next step", () => {
+  const home = project({});
+  const dir = project(WORKER);
+  const { plan, facts } = init(dir);
+  assert.equal(kinds(plan)[".ai/prompts/security-audit.md"], "create");
+  assert.doesNotMatch(read(dir, ".ai/prompts/security-audit.md"), /\{\{[A-Z_]+\}\}/);
+  assert.match(read(dir, ".ai/prompts/security-audit.md"), /Detected by ai-kit: Workers, D1 \(in root\)/);
+  const agents = read(dir, "AGENTS.md");
+  assert.match(agents, /\| `security-audit\.md` \|/);
+  assert.match(agents, /\*\*R26\.\*\* This project deploys to Cloudflare/);
+  assert.equal(doctor(dir, { home }).findings.filter((f) => f.level !== "info").length, 0, "the rules' prompt row points at a prompt that exists");
+
+  const step = () => nextSteps(dir, facts, { home }).find((s) => s.say === "follow .ai/prompts/security-audit.md");
+  assert.match(step().does, /--security-skill/, "the install line while the skill is missing");
+  mkdirSync(join(dir, ".claude/skills/security-audit"), { recursive: true });
+  writeFileSync(join(dir, ".claude/skills/security-audit/SKILL.md"), "---\nname: security-audit\n---\n");
+  assert.doesNotMatch(step().does, /--security-skill/);
+  assert.equal(doctor(dir, { home }).findings.some((f) => /security-audit skill/.test(f.message)), false);
+
+  // a project that becomes a Cloudflare project later gets the prompt on the next update
+  const later = project({ "package.json": { name: "later" } });
+  init(later);
+  assert.ok(!existsSync(join(later, ".ai/prompts/security-audit.md")));
+  writeFileSync(join(later, "wrangler.toml"), 'name = "later"\nmain = "src/i.ts"\n');
+  assert.equal(kinds(update(later).plan)[".ai/prompts/security-audit.md"], "create");
+});
+
+test("not a Cloudflare project: no prompt, no AGENTS.md trace, no next step, no doctor note, --security-skill skips", () => {
+  const home = project({});
+  const template = readFileSync(join(import.meta.dirname, "..", "templates", "AGENTS.md"), "utf8").replace(/\r\n/g, "\n");
+  assert.ok(template.includes("never write secret values).{{CLOUDFLARE_RULE}}\n"), "the rule placeholder ends an existing line");
+  assert.ok(/\|\{\{CLOUDFLARE_PROMPT_ROW\}\}\n/.test(template), "the row placeholder ends an existing line");
+  for (const files of [VUE, { "composer.json": { require: { "laravel/framework": "^11.0" } } }, { "pyproject.toml": "[project]\nname='x'" }]) {
+    const dir = project(files);
+    const { run, calls } = spy();
+    const { plan, facts } = init(dir, { securitySkill: true, run });
+    assert.ok(!existsSync(join(dir, ".ai/prompts/security-audit.md")));
+    assert.equal(calls.length, 0, "nothing is spawned");
+    assert.ok(plan.notes.some((n) => /Not a Cloudflare project: --security-skill skipped/.test(n)));
+    const agents = read(dir, "AGENTS.md");
+    assert.doesNotMatch(agents, /security-audit|R26|Cloudflare|\{\{/);
+    assert.match(agents, /never write secret values\)\.\n\n### Prompts for bigger jobs/, "no blank line or text left by the rule placeholder");
+    assert.match(agents, /running the app safely\) \|\n<!-- \/ai-kit:rules -->/, "no row left by the row placeholder");
+    assert.ok(!nextSteps(dir, facts, { home }).some((s) => /security/.test(s.say)));
+    assert.ok(!doctor(dir, { home }).findings.some((f) => /Cloudflare|workers\.dev|security-audit/.test(f.message)));
+    assert.equal(JSON.parse(read(dir, ".ai/ai-kit.json")).security_skill, undefined);
+  }
+});
+
+test("--security-skill: one npx call for this project's agents, nothing with --dry-run, recorded in ai-kit.json", { skip: !nodeHasSkillsCli && "the skills CLI needs Node.js 22.20+" }, () => {
+  const dir = project(WORKER);
+  const dry = spy();
+  const r = init(dir, { dryRun: true, securitySkill: true, run: dry.run });
+  assert.equal(dry.calls.length, 0, "dry run spawns nothing");
+  assert.deepEqual(r.skill.agents, ["claude-code", "gemini-cli", "antigravity"], "init creates CLAUDE.md and GEMINI.md");
+  assert.ok(r.plan.notes.some((n) => n.includes(`would run: npx -y skills add ${SKILL.repo}@${SKILL.ref} --skill security-audit -a claude-code -a gemini-cli -a antigravity -y --copy`)));
+  assert.ok(!existsSync(join(dir, "AGENTS.md")), "dry run wrote files");
+
+  const real = spy();
+  init(dir, { securitySkill: true, run: real.run });
+  assert.equal(real.calls.length, 1);
+  assert.equal(real.calls[0].cmd, process.platform === "win32" ? "npx.cmd" : "npx");
+  assert.equal(real.calls[0].opts.env.DISABLE_TELEMETRY, "1");
+  assert.equal(real.calls[0].opts.cwd, dir);
+  const meta = JSON.parse(read(dir, ".ai/ai-kit.json"));
+  assert.deepEqual(meta.security_skill.agents, ["claude-code", "gemini-cli", "antigravity"]);
+  assert.equal(meta.security_skill.ref, SKILL.ref);
+  init(dir);
+  assert.ok(JSON.parse(read(dir, ".ai/ai-kit.json")).security_skill, "later runs keep the record");
+
+  // only CLAUDE.md left: Claude Code only
+  rmSync(join(dir, "GEMINI.md"));
+  const claude = spy();
+  assert.deepEqual(update(dir, { dryRun: true, securitySkill: true, run: claude.run }).skill.agents, ["claude-code"]);
+  assert.equal(claude.calls.length, 0);
+
+  // a failed install is reported and the rest still applies
+  const f = update(dir, { securitySkill: true, run: () => ({ status: 1 }) });
+  assert.match(f.plan.notes.join("\n"), /--security-skill failed \(exit code 1\)/);
+  assert.equal(kinds(f.plan)[".ai/ai-kit.json"], "update");
+});
+
+test("doctor: a committed .dev.vars in any project; on Cloudflare, Access behind workers.dev and the missing skill", () => {
+  const home = project({});
+  const dir = project({ ...WORKER, "src/auth.ts": "req.headers.get('Cf-Access-Jwt-Assertion')" });
+  init(dir);
+  const found = doctor(dir, { home }).findings;
+  assert.ok(found.some((f) => f.level === "warn" && /workers\.dev URL is on/.test(f.message)));
+  assert.ok(found.some((f) => f.level === "info" && /security-audit skill/.test(f.message) && f.hint === "ai-kit update --security-skill"));
+
+  if (spawnSync("git", ["--version"]).status === 0) {
+    const g = project({ ".dev.vars": "TOKEN=x\n", "worker/.dev.vars": "TOKEN=y\n", ".dev.vars.example": "TOKEN=\n", "package.json": { name: "plain" } });
+    spawnSync("git", ["init", "-q"], { cwd: g });
+    spawnSync("git", ["add", "-f", ".dev.vars", "worker/.dev.vars", ".dev.vars.example"], { cwd: g });
+    const err = doctor(g, { home }).findings.find((f) => f.level === "error" && /Wrangler secret files/.test(f.message));
+    assert.ok(err, "a committed .dev.vars is an error in any project");
+    assert.match(err.message, /worker\/\.dev\.vars/);
+    assert.doesNotMatch(err.message, /\.example/);
+  }
+});
+
+test("cli: --security-skill is a known option; a typo of it is refused", () => {
+  const bin = join(import.meta.dirname, "..", "bin", "ai-kit.js");
+  const dir = project({ "package.json": { name: "plain" } });
+  const run = (...args) => spawnSync(process.execPath, [bin, ...args], { cwd: dir, encoding: "utf8" });
+  assert.equal(run("init", "--security-skil").status, 1);
+  assert.ok(!existsSync(join(dir, "AGENTS.md")));
+  const ok = run("init", "--security-skill", "--dry-run");
+  assert.equal(ok.status, 0, ok.stderr);
+  assert.match(ok.stdout, /Not a Cloudflare project: --security-skill skipped/);
 });

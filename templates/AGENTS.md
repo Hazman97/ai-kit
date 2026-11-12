@@ -118,7 +118,7 @@ If `docs/PROJECT.md` still says `_Not written yet._`, offer once to fill it with
 
 **R25.** "Update the docs", "docs are outdated", "sync docs with code", "regenerate docs": follow
 `.ai/prompts/docs-update.md` (update only, verify every claim against the code, mark what is uncertain,
-never write secret values).
+never write secret values).{{CLOUDFLARE_RULE}}
 
 ### Prompts for bigger jobs (`.ai/prompts/`)
 | Prompt | Use it when the user asks to… |
@@ -130,7 +130,7 @@ never write secret values).
 | `api-setup.md` | create `docs/API.md` (routes, auth, payloads, errors) |
 | `database-setup.md` | create `docs/DATABASE.md` (schema, other storage, access rules, migrations) |
 | `ui-task.md` | write a UI task for another agent (logic first, look second, screenshots as proof) |
-| `audit.md` | audit the app before a release (static + contract + running the app safely) |
+| `audit.md` | audit the app before a release (static + contract + running the app safely) |{{CLOUDFLARE_PROMPT_ROW}}
 <!-- /ai-kit:rules -->
 
 ## Docs Index

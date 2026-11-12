@@ -12,6 +12,10 @@ Usage (run inside your project folder):
   npx github:Hazman97/ai-kit update           newer rules + prompts; your notes are not touched
   npx github:Hazman97/ai-kit doctor           check for missing docs, placeholders, stale index, secrets
   npx github:Hazman97/ai-kit doctor --fix     also regenerate the Docs Index
+  npx github:Hazman97/ai-kit update --security-skill
+                                              Cloudflare projects only: install Cloudflare's
+                                              security-audit skill for this project's agents
+                                              (downloads it from GitHub; needs Node.js 22.20+)
 
 Options:
   --dry-run     show what would change, change nothing
@@ -29,7 +33,7 @@ const dryRun = flag("--dry-run");
 
 // Refuse anything not understood before touching files: `ai-kit update ../other` used to run on the current
 // folder because the extra word was ignored.
-const FLAGS = new Set(["--dry-run", "--dir", "--no-merge", "--merge", "--fix", "-h", "--help", "-v", "--version"]);
+const FLAGS = new Set(["--dry-run", "--dir", "--no-merge", "--merge", "--fix", "--security-skill", "-h", "--help", "-v", "--version"]);
 const words = args.filter((a, i) => !a.startsWith("-") && args[i - 1] !== "--dir");
 const problems = [
   ...args.filter((a) => a.startsWith("-") && !FLAGS.has(a)).map((a) => `unknown option "${a}"`),
@@ -72,7 +76,7 @@ if (flag("-v") || flag("--version")) {
   console.log(HELP);
 } else if (cmd === "init") {
   // converting an existing AGENTS.md is the default; --merge is still accepted from 1.0 docs
-  const { plan, facts } = init(dir, { dryRun, merge: !flag("--no-merge") });
+  const { plan, facts } = init(dir, { dryRun, merge: !flag("--no-merge"), securitySkill: flag("--security-skill") });
   showFacts(facts);
   console.log(bold("Files:"));
   showPlan(plan);
@@ -89,7 +93,7 @@ if (flag("-v") || flag("--version")) {
     console.log(`  Commit the changed files. Check any time with: npx github:Hazman97/ai-kit doctor`);
   }
 } else if (cmd === "update") {
-  const { plan, failed } = update(dir, { dryRun });
+  const { plan, failed } = update(dir, { dryRun, securitySkill: flag("--security-skill") });
   console.log(`\n${bold(`ai-kit ${VERSION}: update`)}`);
   showPlan(plan);
   if (failed) process.exitCode = 1;

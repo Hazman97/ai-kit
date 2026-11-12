@@ -54,7 +54,8 @@ your-project/
         ├── api-setup.md       write docs/API.md (routes, auth, payloads, errors)
         ├── database-setup.md  write docs/DATABASE.md (schema, storage, access rules, migrations)
         ├── ui-task.md         hand UI work to another agent: logic first, look second, screenshots as proof
-        └── audit.md           a production-safe audit: static + API contract + running the app
+        ├── audit.md           a production-safe audit: static + API contract + running the app
+        └── security-audit.md  Cloudflare projects only: Cloudflare's security-audit skill + a Cloudflare checklist
 ```
 
 ### The ideas behind it
@@ -78,6 +79,7 @@ Run them inside the project folder (or pass `--dir <path>`). A folder given any 
 | `npx github:Hazman97/ai-kit update` | Newer rules and prompts from this repo. Your notes and your own prompts are not touched. |
 | `npx github:Hazman97/ai-kit doctor` | Checks: docs referenced but missing, unfilled placeholders, old doc names, a stale Docs Index, agents that do not read AGENTS.md, a long LEARNINGS.md, and **`.env` files committed to git**. Exit code 1 on errors (handy in CI). |
 | `npx github:Hazman97/ai-kit doctor --fix` | Also regenerates the Docs Index. |
+| `npx github:Hazman97/ai-kit update --security-skill` | Cloudflare projects only: installs Cloudflare's `security-audit` skill into this project for its agents (see below). Any other project: skipped, nothing installed. |
 
 Add `--dry-run` to any command to see what would change without changing anything.
 
@@ -96,6 +98,23 @@ Add `--dry-run` to any command to see what would change without changing anythin
 
 Later: `follow .ai/prompts/audit.md` before a release, `follow .ai/prompts/ui-task.md` to hand a screen to
 another agent, and "update the docs" whenever the code moved on.
+
+## Security audit (Cloudflare projects)
+
+A project that deploys to Cloudflare (a wrangler config or dependency, `@cloudflare/*` packages, or Pages
+`functions/`, in the root or any sub-folder) gets a little more; every other project looks exactly as before.
+
+- `.ai/prompts/security-audit.md`: runs [Cloudflare's security-audit skill](https://github.com/cloudflare/security-audit-skill)
+  (MIT) and adds a Cloudflare checklist the skill does not have: workers.dev and preview URLs outside Access,
+  Access JWT verification, secrets in `vars` or a committed `.dev.vars`, webhook signatures, D1 queries, R2/KV
+  keys, Email Workers, Durable Objects, SSRF and abuse limits. It never deploys or touches remote data.
+- A rule in `AGENTS.md` (R26): offer the audit once before the first production deploy and after big auth or
+  route changes, only with your OK.
+- `update --security-skill` installs the skill for the agents this project uses (Claude Code, Gemini CLI /
+  Antigravity, Codex, Cursor), pinned to a reviewed commit, with telemetry off. It needs Node.js 22.20+ and
+  downloads from GitHub; without the flag ai-kit downloads nothing.
+- `doctor` reports a committed `.dev.vars` (in any project), a Worker that checks Access JWTs while its
+  workers.dev URL is on, and a missing skill.
 
 ## Customising
 
@@ -119,6 +138,7 @@ npx github:Hazman97/ai-kit update    # tarik peraturan terbaru (nota projek tak 
 ```
 
 Lepas `init`, beritahu AI **sekali sahaja untuk setiap projek**: **"follow .ai/prompts/project-setup.md"**. Dia akan isi `docs/PROJECT.md` dari kod. Sesi seterusnya baca doc tu sendiri; kalau terlupa, AI akan tawarkan bila nampak doc masih kosong.
+Projek yang dihos di Cloudflare (ada `wrangler.toml`/`wrangler.jsonc`, dependency `wrangler` atau `@cloudflare/*`) dapat prompt tambahan `.ai/prompts/security-audit.md`, iaitu audit keselamatan guna skill rasmi Cloudflare dan senarai semak khas Cloudflare. Pasang skill tu dengan `npx github:Hazman97/ai-kit update --security-skill` (perlukan Node.js 22.20+). Projek lain tak berubah langsung.
 Projek yang dah ada `AGENTS.md`? Jalankan `init` macam biasa: peraturan terbaru dimasukkan, nota projek anda dikekalkan, dan backup disimpan dalam `.ai/backup/`. Guna `--no-merge` kalau tak nak fail itu diubah.
 
 ## Develop

@@ -276,7 +276,7 @@ footer .wrap{display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
       <div class="card reveal">
         <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg></div>
         <h3>Prompts that already worked</h3>
-        <p>Eight prompts for the big jobs: project setup, docs sync, merging old docs, frontend, API and database docs, UI tasks for a second agent, and a production-safe audit.</p>
+        <p>Eight prompts for the big jobs: project setup, docs sync, merging old docs, frontend, API and database docs, UI tasks for a second agent, and a production-safe audit. Cloudflare projects also get a security audit with Cloudflare's own skill.</p>
       </div>
     </div>
   </div>
@@ -458,6 +458,13 @@ git commit -m "Add ai-kit setup"</pre><button class="copy small" data-copy='git 
         <div class="say">Say to your agent</div>
         <div class="code say-code"><pre>follow .ai/prompts/audit.md</pre><button class="copy small" data-copy="follow .ai/prompts/audit.md">Copy</button></div>
       </div>
+      <div class="prompt reveal">
+        <span class="file">security-audit.md · Cloudflare projects</span>
+        <h3>Security audit on Cloudflare</h3>
+        <p>Only for projects that deploy to Cloudflare. Runs Cloudflare's own security-audit skill plus a checklist it lacks: workers.dev outside Access, Access JWT checks, secrets in <code>vars</code>, webhooks, D1, R2, Email Workers. Install the skill with <code>update --security-skill</code>.</p>
+        <div class="say">Say to your agent</div>
+        <div class="code say-code"><pre>follow .ai/prompts/security-audit.md</pre><button class="copy small" data-copy="follow .ai/prompts/security-audit.md">Copy</button></div>
+      </div>
     </div>
   </div>
 </section>
@@ -483,6 +490,10 @@ git commit -m "Add ai-kit setup"</pre><button class="copy small" data-copy='git 
         <p><b>Get newer rules and prompts.</b> Your project notes and any prompt you customised stay exactly as they are.</p>
       </div>
       <div class="cmdrow reveal">
+        <div class="code"><pre>npx github:Hazman97/ai-kit update --security-skill</pre><button class="copy small" data-copy="npx github:Hazman97/ai-kit update --security-skill">Copy</button></div>
+        <p><b>Cloudflare projects only.</b> Installs Cloudflare's security-audit skill for this project's agents. Needs Node.js 22.20+; any other project is skipped.</p>
+      </div>
+      <div class="cmdrow reveal">
         <div class="code"><pre>npx github:Hazman97/ai-kit doctor</pre><button class="copy small" data-copy="npx github:Hazman97/ai-kit doctor">Copy</button></div>
         <p><b>Health check.</b> Missing docs, unfilled placeholders, a stale Docs Index, agents not reading <code>AGENTS.md</code>, and <b>secret files committed to git</b>. Exits 1 on errors, so it works in CI.</p>
       </div>
@@ -494,6 +505,7 @@ git commit -m "Add ai-kit setup"</pre><button class="copy small" data-copy='git 
     <div class="flags">
       <span><code>--dry-run</code> preview only</span>
       <span><code>--dir &lt;path&gt;</code> another folder</span>
+      <span><code>--security-skill</code> Cloudflare skill</span>
       <span><code>--help</code> all options</span>
     </div>
   </div>
@@ -507,11 +519,12 @@ git commit -m "Add ai-kit setup"</pre><button class="copy small" data-copy='git 
     </div>
     <div class="faq">
       <details><summary>Will it overwrite my existing files?</summary><p>Your own files are never overwritten: <code>LEARNINGS.md</code>, <code>docs/</code> and prompts you edited are kept as they are. An existing <code>AGENTS.md</code>, <code>CLAUDE.md</code> or <code>GEMINI.md</code> gets the latest rules and the import line while keeping its own sections, and a copy of each is saved in <code>.ai/backup/</code> first; <code>--no-merge</code> leaves them untouched. The one other change: an ai-kit block is appended to <code>.gitignore</code> so screenshots and browser profiles agents create are never committed. Add <code>--dry-run</code> to see the plan before anything is written.</p></details>
+      <details><summary>A project already has ai-kit. How do I bring it up to date?</summary><p>Run <code>npx github:Hazman97/ai-kit doctor</code> in it: a line like <code>Rules are v1.2.0; ai-kit is v1.3.0</code> means there is a newer kit. Then, in that project folder: <code>npx github:Hazman97/ai-kit update --dry-run</code> to see what would change, <code>npx github:Hazman97/ai-kit update</code> to apply it, <code>doctor</code> again to check, and commit the changed files. On a Cloudflare project, add <code>--security-skill</code> to <code>update</code> to install Cloudflare's skill as well. Repeat for each project; each one is updated on its own.</p></details>
       <details><summary>What exactly does <code>update</code> change?</summary><p>Only what ai-kit manages: the rules block between the <code>&lt;!-- ai-kit:rules --&gt;</code> markers in <code>AGENTS.md</code>, the Docs Index block, and prompt files whose first line is the <code>ai-kit:managed</code> marker. Your Project notes, <code>LEARNINGS.md</code> and <code>docs/</code> are never touched.</p></details>
       <details><summary>How do I customise a prompt without losing it on update?</summary><p>Delete the first line of the prompt file (the <code>&lt;!-- ai-kit:managed … --&gt;</code> comment). From then on the file is yours and <code>update</code> leaves it alone.</p></details>
       <details><summary>Where do project-specific rules go?</summary><p>Under <code>## Project notes</code> at the bottom of <code>AGENTS.md</code>: decisions, commands, gotchas. Personal rules that apply to every project (your language, tone) belong in your agent's global file, e.g. <code>~/.claude/CLAUDE.md</code> or <code>~/.gemini/GEMINI.md</code>.</p></details>
       <details><summary>Does it work for non-JavaScript projects?</summary><p>Yes. The rules and prompts are language-neutral. Without a <code>package.json</code>, ai-kit still detects Python, Go, Rust, PHP and others where it can. A Laravel app gets its <code>php artisan</code> commands (<code>composer run dev</code> only when it also uses npm) and Pint for linting; for the rest, your agent fills the commands table during project setup.</p></details>
-      <details><summary>Is anything sent anywhere?</summary><p>No. ai-kit is a few hundred lines of plain Node.js with zero dependencies. It reads your project files locally and writes Markdown. Read the source on GitHub before you run it.</p></details>
+      <details><summary>Is anything sent anywhere?</summary><p>No. ai-kit is a few hundred lines of plain Node.js with zero dependencies. It reads your project files locally and writes Markdown. Read the source on GitHub before you run it. The one exception is opt-in: <code>--security-skill</code> downloads Cloudflare's skill from GitHub through the <code>skills</code> CLI, with its telemetry turned off. Without that flag, nothing is downloaded.</p></details>
       <details><summary>Can I make my own version?</summary><p>Fork the repo, edit the files in <code>templates/</code>, and run <code>npx github:&lt;you&gt;/ai-kit init</code>. It's MIT licensed.</p></details>
     </div>
   </div>
@@ -534,6 +547,20 @@ git commit -m "Add ai-kit setup"</pre><button class="copy small" data-copy='git 
         </li>
       </ol>
       <p style="color:var(--muted);margin:16px 0 0">Projek yang dah ada <code>AGENTS.md</code>? Jalankan <code>init</code> macam biasa. Peraturan terbaru dimasukkan, bahagian anda dikekalkan, dan backup disimpan dalam <code>.ai/backup/</code>.</p>
+      <h3 style="margin:28px 0 8px;font-size:20px">Kemas kini projek yang dah ada ai-kit</h3>
+      <p style="margin:0 0 8px">Kalau <code>doctor</code> tunjuk <code>Rules are v1.2.0; ai-kit is v1.3.0</code>, maknanya ada versi baru. Dalam folder projek tu:</p>
+      <ol>
+        <li>Tengok dulu apa yang akan berubah (tiada apa ditulis):
+          <div class="code"><pre>npx github:Hazman97/ai-kit update --dry-run</pre><button class="copy small" data-copy="npx github:Hazman97/ai-kit update --dry-run">Copy</button></div>
+        </li>
+        <li>Kemas kini. Hanya peraturan, prompt "managed" dan Docs Index berubah; Project notes, <code>LEARNINGS.md</code> dan <code>docs/</code> tak disentuh:
+          <div class="code"><pre>npx github:Hazman97/ai-kit update</pre><button class="copy small" data-copy="npx github:Hazman97/ai-kit update">Copy</button></div>
+        </li>
+        <li>Projek dihos di Cloudflare? Tambah <code>--security-skill</code> untuk pasang skill audit keselamatan Cloudflare (perlukan Node.js 22.20+):
+          <div class="code"><pre>npx github:Hazman97/ai-kit update --security-skill</pre><button class="copy small" data-copy="npx github:Hazman97/ai-kit update --security-skill">Copy</button></div>
+        </li>
+        <li>Semak semula dengan <code>doctor</code>, kemudian commit fail yang berubah. Ulang untuk setiap projek.</li>
+      </ol>
     </div>
   </div>
 </section>
